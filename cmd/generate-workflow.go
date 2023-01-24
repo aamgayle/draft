@@ -11,6 +11,7 @@ func newGenerateWorkflowCmd() *cobra.Command {
 
 	workflowConfig := &workflows.WorkflowConfig{}
 	dest := ""
+	subDir := ""
 	var cmd = &cobra.Command{
 		Use:   "generate-workflow [flags]",
 		Short: "Generates a Github workflow for automatic build and deploy to AKS",
@@ -36,7 +37,8 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVarP(&workflowConfig.AcrName, "registry-name", "r", "", "specify the Azure container registry name")
 	f.StringVar(&workflowConfig.ContainerName, "container-name", "", "specify the container image name")
 	f.StringVarP(&workflowConfig.ResourceGroupName, "resource-group", "g", "", "Specify the Azure resource group of your AKS cluster")
-	f.StringVarP(&dest, "destination", "d", ".", "specify the path to the project directory")
+	f.StringVarP(&dest, "destination", "d", ".", "specify the main path to the project directory")
+	f.StringVarP(&subDir, "subdirectory", "s", "", "specify the sub-path to the project directory")
 	f.StringVarP(&workflowConfig.BranchName, "branch", "b", "", "specify the Github branch to automatically deploy from")
 
 	return cmd
