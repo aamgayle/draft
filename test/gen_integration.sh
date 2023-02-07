@@ -202,7 +202,7 @@ languageVariables:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
       - run: echo "TESTING"
-      - run: echo "Docker Build Context: $DOCKER_BUILD_CONTEXT_PATH"
+      - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
