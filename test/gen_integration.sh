@@ -180,7 +180,7 @@ languageVariables:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  $lang-helm-create-update:
+  $lang-helm-create-update-env-check:
     runs-on: ubuntu-latest
     services:
       registry:
@@ -201,6 +201,7 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
+      - run: echo $DOCKER_BUILD_CONTEXT_PATH
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube

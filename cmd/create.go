@@ -47,6 +47,8 @@ type createCmd struct {
 
 	templateWriter           templatewriter.TemplateWriter
 	templateVariableRecorder config.TemplateVariableRecorder
+
+	buildContextPath string
 }
 
 func newCreateCmd() *cobra.Command {
@@ -70,14 +72,16 @@ func newCreateCmd() *cobra.Command {
 	f.StringVarP(&cc.appName, "app", "a", "", "specify the name of the helm release")
 	f.StringVarP(&cc.lang, "language", "l", "", "specify the language used to create the Kubernetes deployment")
 	f.StringVarP(&cc.dest, "destination", "d", ".", "specify the path to the project directory")
+	f.StringVarP(&cc.buildContextPath, "build-context", "b", ".", "specify the path to the docker build context")
 	f.BoolVar(&cc.dockerfileOnly, "dockerfile-only", false, "only create Dockerfile in the project directory")
 	f.BoolVar(&cc.deploymentOnly, "deployment-only", false, "only create deployment files in the project directory")
 	f.BoolVar(&cc.skipFileDetection, "skip-file-detection", false, "skip file detection step")
-
 	return cmd
 }
 
 func (cc *createCmd) initConfig() error {
+	os.Setenv("DOCKER_BUILD_CONTEXT_PATH", cc.buildContextPath)
+
 	if cc.createConfigPath != "" {
 		log.Debug("loading config")
 		configBytes, err := os.ReadFile(cc.createConfigPath)
