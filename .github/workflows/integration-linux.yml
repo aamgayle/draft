@@ -69,7 +69,7 @@ jobs:
           repository: gambtho/go_echo
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -335,7 +335,7 @@ jobs:
           repository: OliverMKing/flask-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -601,7 +601,7 @@ jobs:
           repository: OliverMKing/tiny-http-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -867,7 +867,7 @@ jobs:
           repository: davidgamero/express-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -1133,7 +1133,7 @@ jobs:
           repository: OliverMKing/ruby-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -1399,7 +1399,7 @@ jobs:
           repository: imiller31/csharp-simple-web-app
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -1665,7 +1665,7 @@ jobs:
           repository: imiller31/simple-java-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -1931,7 +1931,7 @@ jobs:
           repository: imiller31/simple-gradle-server
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -2197,7 +2197,7 @@ jobs:
           repository: OliverMKing/swift-hello-world
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -2463,7 +2463,7 @@ jobs:
           repository: bfoley13/ErlangExample
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
@@ -2729,7 +2729,7 @@ jobs:
           repository: imiller31/clojure-simple-http
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
+      - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/ -b ./testrepo
       - run: echo TESTING
       - run: echo "Docker Build Context - $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
