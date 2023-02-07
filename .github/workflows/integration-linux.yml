@@ -71,7 +71,7 @@ jobs:
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
       - run: echo TESTING
-      - run: echo Docker Build Context: 
+      - run: echo "Docker Build Context: $DOCKER_BUILD_CONTEXT_PATH"
       - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
