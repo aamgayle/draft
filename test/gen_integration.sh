@@ -16,7 +16,8 @@ manifest_workflow_names_file=./temp/manifest_workflow_names.txt
 rm $manifest_workflow_names_file
 
 # add build to workflow
-echo "name: draft Linux Integrations
+echo "# this file is generated using gen_integration.sh
+name: draft Linux Integrations
 
 on:
   pull_request:
@@ -27,19 +28,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18.2
       - name: make
         run: make
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: helm-skaffold
           path: ./test/skaffold.yaml
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: draft-binary
           path: ./draft
@@ -56,34 +57,34 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
       - name: make
         run: make
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: draft-binary
           path: ./draft.exe
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_helm
           path: ./test/check_windows_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_addon_helm
           path: ./test/check_windows_addon_helm.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_kustomize
           path: ./test/check_windows_kustomize.ps1
           if-no-files-found: error
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: check_windows_addon_kustomize
           path: ./test/check_windows_addon_kustomize.ps1
@@ -172,13 +173,13 @@ languageVariables:
       runs-on: ubuntu-latest
       needs: build
       steps:
-        - uses: actions/checkout@v2
-        - uses: actions/download-artifact@v2
+        - uses: actions/checkout@v3
+        - uses: actions/download-artifact@v3
           with:
             name: draft-binary
         - run: chmod +x ./draft
         - run: mkdir ./langtest
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
           with:
             repository: $repo
             path: ./langtest
@@ -201,13 +202,13 @@ languageVariables:
           - 5000:5000
     needs: $lang-helm-dry-run
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: draft-binary
       - run: chmod +x ./draft
       - run: mkdir ./langtest
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: $repo
           path: ./langtest
