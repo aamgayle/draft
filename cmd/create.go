@@ -62,6 +62,7 @@ func newCreateCmd() *cobra.Command {
 			if err := cc.initConfig(); err != nil {
 				return err
 			}
+			os.Setenv("DOCKER_BUILD_CONTEXT_PATH", cc.buildContextPath)
 			return cc.run()
 		},
 	}
@@ -80,8 +81,6 @@ func newCreateCmd() *cobra.Command {
 }
 
 func (cc *createCmd) initConfig() error {
-	os.Setenv("DOCKER_BUILD_CONTEXT_PATH", cc.buildContextPath)
-
 	if cc.createConfigPath != "" {
 		log.Debug("loading config")
 		configBytes, err := os.ReadFile(cc.createConfigPath)
