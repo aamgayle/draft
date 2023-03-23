@@ -1,8 +1,9 @@
 package workflows
 
 import (
-	"github.com/Azure/draft/pkg/prompts"
 	"strings"
+
+	"github.com/Azure/draft/pkg/prompts"
 )
 
 type WorkflowConfig struct {
@@ -15,6 +16,7 @@ type WorkflowConfig struct {
 	ChartsPath         string
 	ChartsOverridePath string
 	KustomizePath      string
+	BuildContextPath   string
 }
 
 func (config *WorkflowConfig) ValidateAndFillConfig() {
