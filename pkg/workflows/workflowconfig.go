@@ -40,6 +40,10 @@ func (config *WorkflowConfig) ValidateAndFillConfig() {
 		config.BranchName = prompts.GetInputFromPrompt("name of the repository branch to deploy from, usually main")
 	}
 
+	if config.BuildContextPath == "." {
+		config.BuildContextPath = prompts.GetInputFromPrompt("path to the docker build context, usually . (current directory)")
+	}
+
 	config.ChartsPath = "./charts"
 	config.ChartsOverridePath = "./charts/production.yaml"
 	config.ManifestsPath = "./manifests"
