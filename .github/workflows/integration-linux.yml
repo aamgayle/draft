@@ -49,64 +49,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gomodule-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: gomodule-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: gambtho/go_echo
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   gomodule-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -128,7 +70,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gomodule/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -371,64 +313,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  python-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: python-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: OliverMKing/flask-hello-world
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   python-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -450,7 +334,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/python/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -693,64 +577,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  rust-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: rust-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: OliverMKing/tiny-http-hello-world
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   rust-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -772,7 +598,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/rust/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1015,64 +841,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  javascript-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: javascript-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: davidgamero/express-hello-world
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   javascript-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -1094,7 +862,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/javascript/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1337,64 +1105,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  ruby-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: ruby-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: OliverMKing/ruby-hello-world
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   ruby-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -1416,7 +1126,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/ruby/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1659,64 +1369,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  csharp-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: csharp-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: imiller31/csharp-simple-web-app
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   csharp-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -1738,7 +1390,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/csharp/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -1981,64 +1633,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  java-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: java-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: imiller31/simple-java-server
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   java-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -2060,7 +1654,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/java/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2303,64 +1897,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  gradle-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: gradle-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: imiller31/simple-gradle-server
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   gradle-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -2382,7 +1918,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/gradle/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2625,64 +2161,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  swift-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: swift-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: OliverMKing/swift-hello-world
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   swift-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -2704,7 +2182,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/swift/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -2947,64 +2425,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  erlang-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: erlang-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: bfoley13/ErlangExample
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   erlang-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -3026,7 +2446,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/erlang/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube
@@ -3269,64 +2689,6 @@ jobs:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  clojure-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: clojure-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: imiller31/clojure-simple-http
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval $(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n verifying images:
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   clojure-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -3348,7 +2710,7 @@ jobs:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/clojure/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ -a webapp_routing --variable ingress-tls-cert-keyvault-uri=test.cert.keyvault.uri --variable ingress-use-osm-mtls=true --variable ingress-host=host1
       - name: start minikube
         id: minikube

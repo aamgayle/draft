@@ -180,64 +180,6 @@ languageVariables:
           run: |
             npm install -g ajv-cli@5.0.0
             ajv validate -s test/dry_run_schema.json -d test/temp/dry-run.json
-  $lang-helm-create-update:
-    runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
-    needs: $lang-helm-dry-run
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: draft-binary
-      - run: chmod +x ./draft
-      - run: mkdir ./langtest
-      - uses: actions/checkout@v2
-        with:
-          repository: $repo
-          path: ./langtest
-      - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
-      - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer
-      - run: ./draft -v update -d ./langtest/ $ingress_test_args
-      - name: start minikube
-        id: minikube
-        uses: medyagh/setup-minikube@master
-      - name: Build image
-        run: |
-          export SHELL=/bin/bash
-          eval \$(minikube -p minikube docker-env)
-          docker build -f ./langtest/Dockerfile -t testapp ./langtest/
-          echo -n "verifying images:"
-          docker images
-      # Runs Helm to create manifest files
-      - name: Bake deployment
-        uses: azure/k8s-bake@v2.1
-        with:
-          renderEngine: 'helm'
-          helmChart: ./langtest/charts
-          overrideFiles: ./langtest/charts/values.yaml
-          overrides: |
-            replicas:2
-          helm-version: 'latest'
-        id: bake
-      # Deploys application based on manifest files from previous step
-      - name: Deploy application
-        uses: Azure/k8s-deploy@v3.0
-        continue-on-error: true
-        id: deploy
-        with:
-          action: deploy
-          manifests: \${{ steps.bake.outputs.manifestsBundle }}
-      - name: Check default namespace
-        if: steps.deploy.outcome != 'success'
-        run: kubectl get po
-      - name: Fail if any error
-        if: steps.deploy.outcome != 'success'
-        run: exit 6
   $lang-helm-docker-para:
     runs-on: ubuntu-latest
     services:
@@ -259,7 +201,7 @@ languageVariables:
           path: ./langtest
       - run: rm -rf ./langtest/manifests && rm -f ./langtest/Dockerfile ./langtest/.dockerignore
       - run: ./draft -v create -c ./test/integration/$lang/helm.yaml -d ./langtest/
-      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup --container-name someContainer -p .
+      - run: ./draft -b main -v generate-workflow -d ./langtest/ -c someAksCluster -r someRegistry -g someResourceGroup -p . --container-name someContainer 
       - run: ./draft -v update -d ./langtest/ $ingress_test_args
       - name: start minikube
         id: minikube
