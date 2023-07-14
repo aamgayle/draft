@@ -7,6 +7,7 @@ type WorkflowConfig struct {
 	AksClusterName    string
 	BranchName        string
 	BuildContextPath  string
+	ManifestPath      string
 }
 
 func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
@@ -33,6 +34,10 @@ func (config *WorkflowConfig) SetFlagValuesToMap() map[string]string {
 
 	if config.BuildContextPath != "" {
 		flagValuesMap["BUILDCONTEXTPATH"] = config.BuildContextPath
+	}
+
+	if config.ManifestPath != "" {
+		flagValuesMap["MANIFESTPATH"] = config.ManifestPath
 	}
 
 	return flagValuesMap

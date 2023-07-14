@@ -11,6 +11,8 @@ variables:
     description: "the Github branch to automatically deploy from"
   - name: "BUILDCONTEXTPATH"
     description: "the path to the Docker build context"
+  - name: "MANIFESTPATH"
+    description: "the path to the manifest files or helm charts"
 variableDefaults:
   - name: "CHARTPATH"
     value: "./charts"

@@ -12,6 +12,7 @@ import (
 type generateWorkflowCmd struct {
 	workflowConfig workflows.WorkflowConfig
 	dest           string
+	manifestPath   string
 	deployType     string
 	flagVariables  []string
 	templateWriter templatewriter.TemplateWriter
@@ -53,6 +54,7 @@ with draft on AKS. This command assumes the 'setup-gh' command has been run prop
 	f.StringVar(&gwCmd.deployType, "deploy-type", emptyDefaultFlagValue, "specify the type of deployment")
 	f.StringArrayVarP(&gwCmd.flagVariables, "variable", "", []string{}, "pass additional variables")
 	f.StringVarP(&gwCmd.workflowConfig.BuildContextPath, "build-context-path", "x", emptyDefaultFlagValue, "specify the docker build context path")
+	f.StringVarP(&gwCmd.workflowConfig.ManifestPath, "manifest-path", "m", currentDirDefaultFlagValue, "specify the path to manifest folder if not in the root folder")
 	gwCmd.templateWriter = &writers.LocalFSWriter{}
 	return cmd
 }

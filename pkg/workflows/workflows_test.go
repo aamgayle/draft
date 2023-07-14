@@ -22,11 +22,13 @@ import (
 
 func TestCreateWorkflows(t *testing.T) {
 	dest := "."
+	manifestPath := "./testPath"
 	deployType := "helm"
 	flagVariables := []string{}
 	templatewriter := &writers.LocalFSWriter{}
 	flagValuesMap := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "."}
 	flagValuesMapNoRoot := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": "test"}
+	flagValuesMapWithManPath := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": ".", "manifestPath": manifestPath}
 
 	err := createTempDeploymentFile("charts", "charts/production.yaml", "../../test/templates/helm/charts/production.yaml")
 	assert.Nil(t, err)
@@ -56,6 +58,9 @@ func TestCreateWorkflows(t *testing.T) {
 	//test for invalid deployType
 	deployType = "testInvalidDeployType"
 	assert.NotNil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMap))
+
+	//test for different manifestPath
+	assert.Nil(t, CreateWorkflows(dest, deployType, flagVariables, templatewriter, flagValuesMapWithManPath))
 }
 
 func TestUpdateProductionDeploymentsValid(t *testing.T) {
@@ -173,8 +178,10 @@ func TestPopulateConfigs(t *testing.T) {
 
 func TestCreateWorkflowFiles(t *testing.T) {
 	templatewriter := &writers.LocalFSWriter{}
+	manifestPath := "./testPath"
 	customInputs := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "BUILDCONTEXTPATH": "."}
 	customInputsNoRoot := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "CHARTPATH": "testPath", "CHARTOVERRIDEPATH": "testOverridePath", "BUILDCONTEXTPATH": "test"}
+	customInputsManifestPath := map[string]string{"AZURECONTAINERREGISTRY": "testAcr", "CONTAINERNAME": "testContainer", "RESOURCEGROUP": "testRG", "CLUSTERNAME": "testCluster", "BRANCHNAME": "testBranch", "BUILDCONTEXTPATH": ".", "manifestPath": manifestPath}
 	badInputs := map[string]string{}
 
 	workflowTemplate, err := createMockWorkflowTemplatesFS()
@@ -197,6 +204,10 @@ func TestCreateWorkflowFiles(t *testing.T) {
 	os.RemoveAll(".github")
 
 	err = mockWF.createWorkflowFiles("helm", badInputs, templatewriter)
+	assert.NotNil(t, err)
+	os.RemoveAll(".github")
+
+	err = mockWF.createWorkflowFiles("helm", customInputsManifestPath, templatewriter)
 	assert.NotNil(t, err)
 	os.RemoveAll(".github")
 }
